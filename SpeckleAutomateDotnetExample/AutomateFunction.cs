@@ -1,29 +1,41 @@
 using Objects;
 using Objects.Geometry;
+using Objects.Primitive;
 using Speckle.Automate.Sdk;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
 public static class AutomateFunction
 {
+  static double GetMeasurement(Base obj, string key)
+  {
+    object? item = obj[key];
+    if (item is double d) return d;
+    if (item is float f) return f;
+    if (item is int i) return i;
+
+    if (item is string s && double.TryParse(s, out double sD)) return sD;
+
+    return 0;
+  }
+
   public static async Task Run(
     AutomationContext automationContext,
     FunctionInputs functionInputs
   )
   {
-    Console.WriteLine("Starting execution");
     _ = typeof(ObjectsKit).Assembly; // INFO: Force objects kit to initialize
+    Base commitObject = await automationContext.ReceiveVersion();
 
-    Console.WriteLine("Receiving version");
-    var commitObject = await automationContext.ReceiveVersion();
+    var width = GetMeasurement(commitObject, "width");
+    var height = GetMeasurement(commitObject, "height");
+    var length = GetMeasurement(commitObject, "length");
 
-    Console.WriteLine("Received version: " + commitObject);
-
-    var count = commitObject
-      .Flatten()
-      .Count(b => b.speckle_type == functionInputs.SpeckleTypeToCount);
-
-    Console.WriteLine($"Counted {count} objects");
-    automationContext.MarkRunSuccess($"Counted {count} objects");
+    Plane plane = new(new Point(0, 0, 0), new Vector(0, 0, 1), new Vector(1, 0, 0), new Vector(0, 1, 0));
+    Interval interval = new();
+    Box box = new(plane, new(0, width), new(0, length), new(0, height));
+    await automationContext.CreateNewVersionInProject(box, functionInputs.TargetModelName);
+    automationContext.MarkRunSuccess("Execution completed successfully");
   }
 }
