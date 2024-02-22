@@ -11,9 +11,16 @@ public static class AutomateFunction
   static double GetMeasurement(Base obj, string key)
   {
     object? item = obj[key];
+    try
+    {
+      return Convert.ToDouble(item);
+    }
+    catch (Exception ex) { }
+
     if (item is double d) return d;
     if (item is float f) return f;
     if (item is int i) return i;
+    if (item is long l) return l;
 
     if (item is string s && double.TryParse(s, out double sD)) return sD;
 
