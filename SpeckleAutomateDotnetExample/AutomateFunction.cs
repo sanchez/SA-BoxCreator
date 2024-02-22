@@ -27,13 +27,18 @@ public static class AutomateFunction
   {
     _ = typeof(ObjectsKit).Assembly; // INFO: Force objects kit to initialize
     Base commitObject = await automationContext.ReceiveVersion();
+    Console.WriteLine(commitObject);
 
     var width = GetMeasurement(commitObject, "width");
+    Console.WriteLine(width);
+
     var height = GetMeasurement(commitObject, "height");
+    Console.WriteLine(height);
+
     var length = GetMeasurement(commitObject, "length");
+    Console.WriteLine(length);
 
     Plane plane = new(new Point(0, 0, 0), new Vector(0, 0, 1), new Vector(1, 0, 0), new Vector(0, 1, 0));
-    Interval interval = new();
     Box box = new(plane, new(0, width), new(0, length), new(0, height));
     await automationContext.CreateNewVersionInProject(box, functionInputs.TargetModelName);
     automationContext.MarkRunSuccess("Execution completed successfully");
