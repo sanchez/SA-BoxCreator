@@ -17,6 +17,8 @@ public static class AutomateFunction
 
     if (item is string s && double.TryParse(s, out double sD)) return sD;
 
+    Console.WriteLine(item);
+
     return 0;
   }
 
